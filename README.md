@@ -5,96 +5,61 @@
 ## 功能特点
 
 - ✅ 支持多种微信推送服务（企业微信、Server酱、WxPusher、PushPlus）
+- ✅ 支持 Cloudflare Worker 代理（解决企业微信 IP 白名单问题）
 - ✅ 灵活的提醒配置（时间、日期、内容）
-- ✅ 自动定时检查发送
-- ✅ Windows/macOS/Linux 全平台支持
-- ✅ 支持 GitHub Actions 云端部署
-- ✅ 支持云服务器部署
-- ✅ 简单的命令行工具和交互式向导
+- ✅ GitHub Actions / 云服务器 / 本地 多种部署方式
+- ✅ 简单的命令行工具
 
-## 推送服务对比
+## 推荐方案对比
 
-| 服务 | 推荐度 | 特点 | 部署方式 |
-|------|--------|------|---------|
-| **企业微信** | ⭐⭐⭐⭐⭐ | 功能强大，完全免费，支持 Markdown，可指定用户 | 云服务器（有固定IP） |
-| Server酱 | ⭐⭐⭐⭐ | 简单易用，注册即用，无需服务器 | GitHub Actions、本地 |
-| WxPusher | ⭐⭐⭐⭐ | 支持多人推送 | GitHub Actions、本地、服务器 |
-| PushPlus | ⭐⭐⭐ | 模板丰富 | GitHub Actions、本地、服务器 |
-
-## 三种部署方式
-
-| 方式 | 优点 | 缺点 | 适合人群 |
-|------|------|------|---------|
-| ☁️ **GitHub Actions** | 免费，无需服务器，设置简单 | 企业微信需要IP白名单（不适合） | 使用Server酱/WxPusher |
-| 🖥️ **云服务器** | 稳定可靠，固定IP，适合企业微信 | 需要购买服务器 | 长期使用，用企业微信 |
-| 💻 **本地运行** | 快速测试 | 电脑需要一直开机 | 临时测试 |
+| 方案 | 难度 | 成本 | 适合企业微信 | 推荐度 |
+|------|------|------|-------------|--------|
+| ☁️ **GitHub Actions + Server酱** | ⭐ 简单 | 免费 | ❌ | ⭐⭐⭐⭐⭐ 最快上手 |
+| 🔶 **GitHub Actions + Cloudflare Worker** | ⭐⭐ 中等 | 免费 | ✅ | ⭐⭐⭐⭐⭐ 推荐方案 |
+| 🖥️ **云服务器** | ⭐⭐⭐ 较难 | ~50元/年 | ✅ | ⭐⭐⭐⭐ 最稳定 |
+| 💻 **本地运行** | ⭐ 简单 | 免费 | ✅ | ⭐⭐ 测试用 |
 
 ---
 
-## 快速开始
+## 🚀 方案一：GitHub Actions + Server酱（最快，5分钟）
 
-### 方式一：GitHub Actions（推荐用 Server酱）
+1. 访问 https://sct.ftqq.com 扫码获取 SENDKEY
+2. 部署到 GitHub（参考 docs/GITHUB_DEPLOY.md）
+3. 添加 GitHub Secret: `SCT_KEY`
 
-快速部署，无需服务器。详见：[docs/GITHUB_DEPLOY.md](docs/GITHUB_DEPLOY.md)
+---
 
-### 方式二：云服务器（推荐用企业微信）
+## 🔶 方案二：GitHub Actions + Cloudflare Worker（推荐）
 
-最稳定的方案，有固定IP。详见：[docs/SERVER_DEPLOY.md](docs/SERVER_DEPLOY.md)
+完美解决企业微信 IP 白名单问题，全部免费！
 
-**一键部署命令（在服务器上运行）：**
+### 步骤：
+
+1. **部署 Cloudflare Worker**（详见 docs/WORKER_DEPLOY.md）
+2. **添加 GitHub Secrets**：
+   - `WORKER_URL`: 你的 Worker URL
+   - `WORKER_TOKEN`: 你设置的 AUTH_TOKEN
+
+详细文档：[docs/WORKER_DEPLOY.md](docs/WORKER_DEPLOY.md)
+
+---
+
+## 🖥️ 方案三：云服务器
+
+最稳定的方案。详见：[docs/SERVER_DEPLOY.md](docs/SERVER_DEPLOY.md)
+
+一键部署：
 ```bash
 wget -O deploy-server.sh https://raw.githubusercontent.com/talang-tech/wechat-reminder/main/deploy-server.sh
 chmod +x deploy-server.sh
 sudo bash deploy-server.sh
 ```
 
-### 方式三：本地运行（测试用）
-
-```bash
-# 1. 克隆代码
-git clone https://github.com/talang-tech/wechat-reminder.git
-cd wechat-reminder
-
-# 2. 安装依赖
-pip install requests PyYAML
-
-# 3. 创建 .env 配置文件（见下方配置说明）
-
-# 4. 创建提醒
-python scripts/wizard.py
-
-# 5. 测试推送
-python scripts/test_push.py
-```
-
 ---
 
 ## 配置说明
 
-### 企业微信配置
-
-```env
-WECOM_CORPID=你的企业ID
-WECOM_CORPSECRET=你的应用Secret
-WECOM_AGENTID=你的应用AgentId
-WECOM_TOUSER=接收人UserId
-```
-
-获取方法见：[docs/GITHUB_DEPLOY.md](docs/GITHUB_DEPLOY.md)
-
-### Server酱配置
-
-```env
-SCT_KEY=你的SENDKEY
-```
-
-访问 https://sct.ftqq.com 获取。
-
----
-
-## 提醒配置
-
-编辑 `reminders.yaml`：
+### 提醒配置 (reminders.yaml)
 
 ```yaml
 reminders:
@@ -106,45 +71,23 @@ reminders:
     days: [1, 2, 3, 4, 5, 6, 7]  # 1=周一, 7=周日
 ```
 
----
+### 环境变量
 
-## 命令行工具
-
-| 命令 | 功能 |
+| 变量 | 用途 |
 |------|------|
-| `python scripts/wizard.py` | 交互式创建提醒 |
-| `python scripts/create_reminder.py` | 创建提醒 |
-| `python scripts/list_reminders.py` | 列出所有提醒 |
-| `python scripts/delete_reminder.py` | 删除提醒 |
-| `python scripts/test_push.py` | 测试推送服务 |
-| `python scripts/test_action.py` | GitHub Actions 测试脚本 |
-| `python scripts/check_reminders.py` | 检查并发送提醒 |
+| `WORKER_URL` + `WORKER_TOKEN` | Cloudflare Worker 代理 |
+| `SCT_KEY` | Server酱 |
+| `WECOM_*` | 企业微信直连（需固定IP） |
+| `WXPUSHER_*` | WxPusher |
+| `PUSHPLUS_TOKEN` | PushPlus |
 
 ---
 
-## 目录结构
+## 文档
 
-```
-wechat-reminder-skill/
-├── SKILL.md
-├── README.md
-├── .github/workflows/
-│   └── reminder.yml              # GitHub Actions 配置
-├── docs/
-│   ├── GITHUB_DEPLOY.md          # GitHub 部署文档
-│   └── SERVER_DEPLOY.md          # 服务器部署文档
-├── scripts/
-│   ├── reminder.py               # 核心模块
-│   ├── wizard.py                 # 交互式向导
-│   ├── test_push.py              # 测试推送
-│   ├── test_action.py            # Actions 测试
-│   ├── check_reminders.py        # 检查并发送
-│   └── ...
-├── deploy-server.sh              # 服务器一键部署脚本
-├── wechat-reminder.service       # Systemd 服务文件
-└── assets/
-    └── reminders.example.yaml    # 配置示例
-```
+- [GitHub Actions 部署](docs/GITHUB_DEPLOY.md)
+- [Cloudflare Worker 部署](docs/WORKER_DEPLOY.md) ⭐
+- [云服务器部署](docs/SERVER_DEPLOY.md)
 
 ---
 

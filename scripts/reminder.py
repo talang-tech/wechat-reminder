@@ -186,6 +186,38 @@ class WeComNotifier(Notifier):
             return False
 
 
+class WorkerNotifier(Notifier):
+    """Cloudflare Worker 代理推送（解决IP白名单问题）"""
+
+    def __init__(self, worker_url: str, auth_token: str):
+        self.worker_url = worker_url.rstrip('/')
+        self.auth_token = auth_token
+
+    def send(self, title: str, content: str) -> bool:
+        try:
+            response = requests.post(
+                self.worker_url,
+                headers={
+                    "Authorization": f"Bearer {self.auth_token}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "title": title,
+                    "content": content
+                },
+                timeout=10
+            )
+            result = response.json()
+            if result.get("success"):
+                return True
+            else:
+                print(f"Worker代理发送失败: {result.get('error', result)}")
+                return False
+        except Exception as e:
+            print(f"Worker代理异常: {e}")
+            return False
+
+
 class ReminderManager:
     """提醒管理器"""
 
@@ -296,7 +328,13 @@ class ReminderManager:
 
 def create_notifier_from_env() -> Optional[Notifier]:
     """从环境变量创建通知器"""
-    # 优先尝试企业微信
+    # 优先尝试 Cloudflare Worker 代理
+    worker_url = os.getenv("WORKER_URL")
+    worker_token = os.getenv("WORKER_TOKEN")
+    if worker_url and worker_token:
+        return WorkerNotifier(worker_url, worker_token)
+
+    # 尝试企业微信（需要固定IP）
     wecom_corpid = os.getenv("WECOM_CORPID")
     wecom_corpsecret = os.getenv("WECOM_CORPSECRET")
     wecom_agentid = os.getenv("WECOM_AGENTID")

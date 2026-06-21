@@ -2,7 +2,6 @@ name: 微信定时提醒
 
 on:
   schedule:
-    # 每 5 分钟运行一次
     - cron: '*/5 * * * *'
   workflow_dispatch:
     inputs:
@@ -35,13 +34,20 @@ jobs:
 
       - name: Send reminders
         env:
+          # Cloudflare Worker 代理（推荐，解决IP白名单问题）
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          WORKER_TOKEN: ${{ secrets.WORKER_TOKEN }}
+          # 企业微信直接调用（需要服务器固定IP）
           WECOM_CORPID: ${{ secrets.WECOM_CORPID }}
           WECOM_CORPSECRET: ${{ secrets.WECOM_CORPSECRET }}
           WECOM_AGENTID: ${{ secrets.WECOM_AGENTID }}
           WECOM_TOUSER: ${{ secrets.WECOM_TOUSER }}
+          # Server酱
           SCT_KEY: ${{ secrets.SCT_KEY }}
+          # WxPusher
           WXPUSHER_APP_TOKEN: ${{ secrets.WXPUSHER_APP_TOKEN }}
           WXPUSHER_UIDS: ${{ secrets.WXPUSHER_UIDS }}
+          # PushPlus
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
         run: |
           echo "Time (UTC): $(date)"
