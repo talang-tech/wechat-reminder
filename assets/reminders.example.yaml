@@ -1,0 +1,59 @@
+# 提醒配置示例
+# 复制此文件为 reminders.yaml 并根据需要修改
+
+reminders:
+  - id: drink-water
+    title: "喝水提醒 💧"
+    content: "该喝水了！保持健康的饮水习惯，每隔一段时间喝一杯水。"
+    time: "09:00"
+    enabled: true
+    days: [1, 2, 3, 4, 5, 6, 7]
+
+  - id: drink-water-11
+    title: "喝水提醒 💧"
+    content: "上午11点了，记得喝水！"
+    time: "11:00"
+    enabled: true
+    days: [1, 2, 3, 4, 5, 6, 7]
+
+  - id: drink-water-15
+    title: "喝水提醒 💧"
+    content: "下午3点了，补充水分！"
+    time: "15:00"
+    enabled: true
+    days: [1, 2, 3, 4, 5, 6, 7]
+
+  - id: take-medicine
+    title: "吃药提醒 💊"
+    content: "记得吃药，饭后半小时服用效果最佳。"
+    time: "08:30"
+    enabled: true
+    days: [1, 2, 3, 4, 5]
+
+  - id: stand-up
+    title: "站立活动 🧍"
+    content: "坐了一小时了，站起来活动一下！拉伸一下，看看远处。"
+    time: "10:00"
+    enabled: true
+    days: [1, 2, 3, 4, 5]
+
+  - id: lunch-reminder
+    title: "午饭提醒 🍱"
+    content: "到饭点了，按时吃饭，保持健康！"
+    time: "12:00"
+    enabled: true
+    days: [1, 2, 3, 4, 5]
+
+  - id: exercise-reminder
+    title: "运动提醒 🏃"
+    content: "今天记得运动30分钟！可以选择散步、跑步或健身。"
+    time: "18:30"
+    enabled: true
+    days: [1, 3, 5, 7]
+
+  - id: sleep-reminder
+    title: "睡觉提醒 🌙"
+    content: "不早了，该准备睡觉了！保证充足的睡眠时间。"
+    time: "22:30"
+    enabled: true
+    days: [1, 2, 3, 4, 5, 6, 7]

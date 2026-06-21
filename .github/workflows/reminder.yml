@@ -1,0 +1,72 @@
+name: 微信定时提醒
+
+on:
+  schedule:
+    # 每 5 分钟运行一次 (减少 GitHub Actions 消耗)
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    # 允许手动触发
+
+jobs:
+  check-reminders:
+    runs-on: ubuntu-latest
+    name: 检查并发送提醒
+    timeout-minutes: 5
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests PyYAML -q
+
+      - name: 配置环境
+        env:
+          SCT_KEY: ${{ secrets.SCT_KEY }}
+          WXPUSHER_APP_TOKEN: ${{ secrets.WXPUSHER_APP_TOKEN }}
+          WXPUSHER_UIDS: ${{ secrets.WXPUSHER_UIDS }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          REMINDERS_CONFIG: ${{ secrets.REMINDERS_CONFIG }}
+        run: |
+          # 创建 .env 文件
+          touch .env
+
+          if [ ! -z "$SCT_KEY" ]; then
+            echo "SCT_KEY=$SCT_KEY" >> .env
+            echo "✓ Server酱 已配置"
+          fi
+
+          if [ ! -z "$WXPUSHER_APP_TOKEN" ]; then
+            echo "WXPUSHER_APP_TOKEN=$WXPUSHER_APP_TOKEN" >> .env
+            echo "WXPUSHER_UIDS=$WXPUSHER_UIDS" >> .env
+            echo "✓ WxPusher 已配置"
+          fi
+
+          if [ ! -z "$PUSHPLUS_TOKEN" ]; then
+            echo "PUSHPLUS_TOKEN=$PUSHPLUS_TOKEN" >> .env
+            echo "✓ PushPlus 已配置"
+          fi
+
+          # 如果提供了自定义配置，则使用它
+          if [ ! -z "$REMINDERS_CONFIG" ]; then
+            echo "$REMINDERS_CONFIG" > reminders.yaml
+            echo "✓ 使用 Secrets 中的提醒配置"
+          else
+            echo "✓ 使用仓库中的 reminders.yaml"
+          fi
+
+      - name: 检查并发送提醒
+        run: |
+          echo "当前时间 (UTC): $(date)"
+          echo "当前时间 (上海): $(TZ='Asia/Shanghai' date)"
+          echo "----------------------------------------"
+          cd scripts
+          TZ='Asia/Shanghai' python check_reminders.py
