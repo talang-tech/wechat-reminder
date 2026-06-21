@@ -195,8 +195,9 @@ class WorkerNotifier(Notifier):
 
     def send(self, title: str, content: str) -> bool:
         try:
+            send_url = f"{self.worker_url}/send"
             response = requests.post(
-                self.worker_url,
+                send_url,
                 headers={
                     "Authorization": f"Bearer {self.auth_token}",
                     "Content-Type": "application/json"
