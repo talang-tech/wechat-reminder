@@ -112,6 +112,80 @@ class PushPlusNotifier(Notifier):
             return False
 
 
+class WeComNotifier(Notifier):
+    """企业微信推送"""
+
+    def __init__(self, corpid: str, corpsecret: str, agentid: str, touser: str):
+        self.corpid = corpid
+        self.corpsecret = corpsecret
+        self.agentid = agentid
+        self.touser = touser  # 接收人，多个用 | 分隔
+        self.access_token = None
+        self.token_expires = 0
+
+    def _get_access_token(self) -> Optional[str]:
+        """获取 access_token"""
+        now = time.time()
+        if self.access_token and now < self.token_expires - 60:
+            return self.access_token
+
+        try:
+            url = "https://qyapi.weixin.qq.com/cgi-bin/gettoken"
+            response = requests.get(
+                url,
+                params={
+                    "corpid": self.corpid,
+                    "corpsecret": self.corpsecret
+                },
+                timeout=10
+            )
+            result = response.json()
+            if result.get("errcode") == 0:
+                self.access_token = result.get("access_token")
+                self.token_expires = now + result.get("expires_in", 7200)
+                return self.access_token
+            else:
+                print(f"获取access_token失败: {result}")
+                return None
+        except Exception as e:
+            print(f"获取access_token异常: {e}")
+            return None
+
+    def send(self, title: str, content: str) -> bool:
+        """发送企业微信消息（支持Markdown）"""
+        access_token = self._get_access_token()
+        if not access_token:
+            return False
+
+        try:
+            url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}"
+
+            # 构建Markdown消息
+            markdown_content = f"### {title}\n\n{content}"
+
+            response = requests.post(
+                url,
+                json={
+                    "touser": self.touser,
+                    "msgtype": "markdown",
+                    "agentid": int(self.agentid),
+                    "markdown": {
+                        "content": markdown_content
+                    }
+                },
+                timeout=10
+            )
+            result = response.json()
+            if result.get("errcode") == 0:
+                return True
+            else:
+                print(f"企业微信发送失败: {result}")
+                return False
+        except Exception as e:
+            print(f"企业微信推送异常: {e}")
+            return False
+
+
 class ReminderManager:
     """提醒管理器"""
 
@@ -222,6 +296,14 @@ class ReminderManager:
 
 def create_notifier_from_env() -> Optional[Notifier]:
     """从环境变量创建通知器"""
+    # 优先尝试企业微信
+    wecom_corpid = os.getenv("WECOM_CORPID")
+    wecom_corpsecret = os.getenv("WECOM_CORPSECRET")
+    wecom_agentid = os.getenv("WECOM_AGENTID")
+    wecom_touser = os.getenv("WECOM_TOUSER")
+    if wecom_corpid and wecom_corpsecret and wecom_agentid and wecom_touser:
+        return WeComNotifier(wecom_corpid, wecom_corpsecret, wecom_agentid, wecom_touser)
+
     # 尝试 Server酱
     sct_key = os.getenv("SCT_KEY")
     if sct_key:

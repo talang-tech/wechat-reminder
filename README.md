@@ -4,12 +4,21 @@
 
 ## 功能特点
 
-- ✅ 支持多种微信推送服务（Server酱、WxPusher、PushPlus）
+- ✅ 支持多种微信推送服务（企业微信、Server酱、WxPusher、PushPlus）
 - ✅ 灵活的提醒配置（时间、日期、内容）
 - ✅ 自动定时检查发送
 - ✅ Windows/macOS/Linux 全平台支持
 - ✅ 简单的命令行工具和交互式向导
 - ☁️ **支持 GitHub Actions 云端部署（免费！）**
+
+## 推送服务对比
+
+| 服务 | 推荐度 | 特点 | 免费额度 |
+|------|--------|------|---------|
+| **企业微信** | ⭐⭐⭐⭐⭐ | 功能强大，完全免费，支持 Markdown，可指定用户 | 无限 |
+| Server酱 | ⭐⭐⭐⭐ | 简单易用，注册即用 | 每天 5 条 |
+| WxPusher | ⭐⭐⭐⭐ | 支持多人推送 | 有免费额度 |
+| PushPlus | ⭐⭐⭐ | 模板丰富 | 免费可用 |
 
 ## 部署方式选择
 
@@ -27,7 +36,22 @@
 
 选择一个推送服务并配置：
 
-**Server酱（推荐）**：
+**企业微信（推荐）**：
+1. 访问 https://work.weixin.qq.com/ 注册企业微信
+2. 进入应用管理创建应用，获取：
+   - `AgentId`
+   - `Secret`
+3. 进入"我的企业"获取 `企业ID`
+4. 进入"通讯录"获取用户 `UserId`
+5. 创建 `.env` 文件：
+   ```
+   WECOM_CORPID=你的企业ID
+   WECOM_CORPSECRET=你的应用Secret
+   WECOM_AGENTID=你的应用AgentId
+   WECOM_TOUSER=接收人UserId
+   ```
+
+**Server酱**：
 1. 访问 https://sct.ftqq.com 注册
 2. 获取你的 SENDKEY
 3. 创建 `.env` 文件：
@@ -127,9 +151,21 @@ git push -u origin main
 
 在 GitHub 仓库中：
 1. **Settings** → **Secrets and variables** → **Actions**
-2. 添加 Secret:
-   - Name: `SCT_KEY`
-   - Value: 你的 Server酱 SENDKEY
+2. 添加 Secret（根据你选择的服务）：
+
+**企业微信（推荐）**：
+- Name: `WECOM_CORPID`
+- Value: 你的企业 ID
+- Name: `WECOM_CORPSECRET`
+- Value: 你的应用 Secret
+- Name: `WECOM_AGENTID`
+- Value: 你的应用 AgentId
+- Name: `WECOM_TOUSER`
+- Value: 接收人 UserId
+
+**Server酱**：
+- Name: `SCT_KEY`
+- Value: 你的 Server酱 SENDKEY
 
 ### 3. 启用并测试
 

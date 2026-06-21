@@ -30,6 +30,10 @@ jobs:
 
       - name: 配置环境
         env:
+          WECOM_CORPID: ${{ secrets.WECOM_CORPID }}
+          WECOM_CORPSECRET: ${{ secrets.WECOM_CORPSECRET }}
+          WECOM_AGENTID: ${{ secrets.WECOM_AGENTID }}
+          WECOM_TOUSER: ${{ secrets.WECOM_TOUSER }}
           SCT_KEY: ${{ secrets.SCT_KEY }}
           WXPUSHER_APP_TOKEN: ${{ secrets.WXPUSHER_APP_TOKEN }}
           WXPUSHER_UIDS: ${{ secrets.WXPUSHER_UIDS }}
@@ -38,6 +42,14 @@ jobs:
         run: |
           # 创建 .env 文件
           touch .env
+
+          if [ ! -z "$WECOM_CORPID" ]; then
+            echo "WECOM_CORPID=$WECOM_CORPID" >> .env
+            echo "WECOM_CORPSECRET=$WECOM_CORPSECRET" >> .env
+            echo "WECOM_AGENTID=$WECOM_AGENTID" >> .env
+            echo "WECOM_TOUSER=$WECOM_TOUSER" >> .env
+            echo "✓ 企业微信 已配置"
+          fi
 
           if [ ! -z "$SCT_KEY" ]; then
             echo "SCT_KEY=$SCT_KEY" >> .env
