@@ -1,0 +1,15 @@
+[Unit]
+Description=微信定时提醒服务
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/wechat-reminder/scripts
+ExecStart=/usr/bin/python3 daemon.py run
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
