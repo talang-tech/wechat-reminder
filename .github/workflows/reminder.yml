@@ -2,10 +2,18 @@ name: 微信定时提醒
 
 on:
   schedule:
-    # 每 5 分钟运行一次 (减少 GitHub Actions 消耗)
+    # 每 5 分钟运行一次
     - cron: '*/5 * * * *'
   workflow_dispatch:
-    # 允许手动触发
+    inputs:
+      test:
+        description: '测试模式 (发送测试消息)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 jobs:
   check-reminders:
@@ -39,18 +47,52 @@ jobs:
           WXPUSHER_UIDS: ${{ secrets.WXPUSHER_UIDS }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
           REMINDERS_CONFIG: ${{ secrets.REMINDERS_CONFIG }}
+          TEST_MODE: ${{ inputs.test }}
         run: |
           echo "当前时间 (UTC): $(date)"
           echo "当前时间 (上海): $(TZ='Asia/Shanghai' date)"
           echo "----------------------------------------"
 
-          # 如果提供了自定义配置，则使用它
-          if [ ! -z "$REMINDERS_CONFIG" ]; then
-            echo "$REMINDERS_CONFIG" > reminders.yaml
-            echo "✓ 使用 Secrets 中的提醒配置"
-          else
-            echo "✓ 使用仓库中的 reminders.yaml"
+          # 检查配置
+          echo "检查配置..."
+          if [ ! -z "$WECOM_CORPID" ]; then
+            echo "✓ 企业微信 CORPID 已配置"
+          fi
+          if [ ! -z "$SCT_KEY" ]; then
+            echo "✓ Server酱 KEY 已配置"
           fi
 
-          cd scripts
-          TZ='Asia/Shanghai' python check_reminders.py
+          # 如果是测试模式，发送测试消息
+          if [ "$TEST_MODE" = "true" ]; then
+            echo ""
+            echo "=== 测试模式：发送测试消息 ==="
+            cd scripts
+            TZ='Asia/Shanghai' python -c "
+import sys
+sys.path.insert(0, '.')
+from reminder import *
+
+notifier = create_notifier_from_env()
+if notifier:
+    print('通知器创建成功')
+    result = notifier.send('测试消息 🎉', '这是一条来自 GitHub Actions 的测试消息！如果你收到了，说明配置成功！')
+    if result:
+        print('✓ 测试消息发送成功！请查看微信')
+    else:
+        print('✗ 消息发送失败')
+else:
+    print('✗ 无法创建通知器，请检查配置')
+    sys.exit(1)
+"
+          else
+            # 正常运行
+            if [ ! -z "$REMINDERS_CONFIG" ]; then
+              echo "$REMINDERS_CONFIG" > reminders.yaml
+              echo "✓ 使用 Secrets 中的提醒配置"
+            else
+              echo "✓ 使用仓库中的 reminders.yaml"
+            fi
+
+            cd scripts
+            TZ='Asia/Shanghai' python check_reminders.py
+          fi
